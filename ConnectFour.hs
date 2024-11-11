@@ -1,14 +1,10 @@
 data Player = Red | Black
-data Coordinate = Row Column
-
--- Do something to limit row/column to 6/7?
-type Row = Int 
-type Column = Int 
+type Coordinate = (Int, Int)
 
 type Token = (Coordinate, Player)
 type Grid = [Token]
 type Game = (Grid, Player) -- Current grid and whose turn it is
-type Move = (Player, Column)
+type Move = (Player, Int)
 
 -- STORY 2
 -- winState (t:ts) = //run through each token
@@ -24,9 +20,18 @@ move :: Game -> Move -> Game
 move = undefined
 
 --STORY 4
--- (Within 6 rows and 7 columns (possible variable numbers))
-legalMoves :: Grid -> [Move]
-legalMoves = undefined
+-- takes a grid and a column number and returns
+-- true if that column is full of tokens
+isFull :: Grid -> Int -> Bool
+isFull grid column = 
+    let numTokens = length [col | ((row, col), p) <- grid, col == column]
+    in numTokens >= 6
+
+-- Takes a game state (a grid and a player)
+-- and returns the list of legal moves on this grid
+-- by this player.
+legalMoves :: Game -> [Move]
+legalMoves (grid, player) = [(player, col) | col <- [1..7], not (isFull grid col)]
 
 -- STORY 5
 prettyPrint :: Grid -> String
