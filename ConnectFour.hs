@@ -1,6 +1,9 @@
-data Player = Red | Black
-data Coordinate = Row Column
+import Prettyprinter
+import Prettyprinter.Render.Text (putDoc)
+import Data.Maybe (fromMaybe)
 
+data Player = Red | Black
+data Coordinate = Coordinate Int Int deriving (Eq, Show)
 -- Do something to limit row/column to 6/7?
 type Row = Int 
 type Column = Int 
@@ -29,5 +32,21 @@ legalMoves :: Grid -> [Move]
 legalMoves = undefined
 
 -- STORY 5
-prettyPrint :: Grid -> String
-prettyPrint = undefined
+
+prettyPrint :: Grid -> Doc ann
+prettyPrint grid = vsep [ prettyRow r | r <- reverse [1..6]]
+  where
+    prettyRow :: Row -> Doc ann
+    prettyRow r = hsep [ prettyCell r c | c <- [1..7]]
+    
+    prettyCell :: Row -> Column -> Doc ann
+    prettyCell r c = case lookup (Coordinate r c) grid of
+      Just Red   -> pretty "o"
+      Just Black -> pretty "x"
+      Nothing    -> pretty "."
+
+-- Example usage
+main :: IO ()
+main = do
+  let grid = [(Coordinate 1 1, Red), (Coordinate 1 2, Black), (Coordinate 2 1, Red)]
+  putDoc (prettyPrint grid <> line)
