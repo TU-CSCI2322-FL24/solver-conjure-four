@@ -1,10 +1,15 @@
-data Player = Red | Black
-type Coordinate = (Int, Int)
+import Data.Maybe
+
+data Player = Red | Black deriving (Eq, Show)
+type Coordinate = (Row, Column) 
+
+type Row = Int
+type Column = Int
 
 type Token = (Coordinate, Player)
 type Grid = [Token]
 type Game = (Grid, Player) -- Current grid and whose turn it is
-type Move = (Player, Int)
+type Move = Column
 
 -- STORY 2
 -- winState (t:ts) = //run through each token
@@ -21,17 +26,12 @@ move = undefined
 
 --STORY 4
 -- takes a grid and a column number and returns
--- true if that column is full of tokens
-isFull :: Grid -> Int -> Bool
-isFull grid column = 
-    let numTokens = length [col | ((row, col), p) <- grid, col == column]
-    in numTokens >= 6
+-- true if that column is not full of tokens
+isNotEmpty :: Grid -> Int -> Bool
+isNotEmpty grid column = isNothing $ lookup (6, column) grid
 
--- Takes a game state (a grid and a player)
--- and returns the list of legal moves on this grid
--- by this player.
 legalMoves :: Game -> [Move]
-legalMoves (grid, player) = [(player, col) | col <- [1..7], not (isFull grid col)]
+legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
 -- STORY 5
 prettyPrint :: Grid -> String
