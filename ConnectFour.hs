@@ -1,7 +1,7 @@
 data Player = Red | Black
-data Coordinate = Row Column
 
 -- Do something to limit row/column to 6/7?
+type Coordinate = (Row, Column)
 type Row = Int 
 type Column = Int 
 
