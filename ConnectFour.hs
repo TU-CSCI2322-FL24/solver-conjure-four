@@ -2,6 +2,7 @@ import Data.Maybe
 
 data Player = Red | Black deriving (Eq, Show)
 type Coordinate = (Row, Column) 
+
 type Row = Int
 type Column = Int
 
@@ -24,9 +25,13 @@ move :: Game -> Move -> Game
 move = undefined
 
 --STORY 4
--- (Within 6 rows and 7 columns (possible variable numbers))
-legalMoves :: Grid -> [Move]
-legalMoves = undefined
+-- takes a grid and a column number and returns
+-- true if that column is not full of tokens
+isNotEmpty :: Grid -> Int -> Bool
+isNotEmpty grid column = isNothing $ lookup (6, column) grid
+
+legalMoves :: Game -> [Move]
+legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
 -- STORY 5
 prettyPrint :: Grid -> String
