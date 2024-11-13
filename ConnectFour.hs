@@ -1,22 +1,42 @@
-data Player = Red | Black
-data Coordinate = Row Column
+import Data.Maybe
 
--- Do something to limit row/column to 6/7?
-type Row = Int 
-type Column = Int 
+data Player = Red | Black deriving (Eq, Show)
+type Coordinate = (Row, Column) 
+
+type Row = Int
+type Column = Int
 
 type Token = (Coordinate, Player)
 type Grid = [Token]
 type Game = (Grid, Player) -- Current grid and whose turn it is
-type Move = (Player, Column)
+type Move = Column
+
+data Win = Winner Player | Ongoing | Tie deriving (Show, Eq)
 
 -- STORY 2
--- winState (t:ts) = //run through each token
--- Maybe a function for each direction instead?
---    where direction = //list of directions of adjacent tokens
---               Four = //check in direction for four tokens
-winState :: Game -> Maybe Player
-winState = undefined
+
+winState :: Token -> Grid -> Win
+winState ((r,c),pl) grid = 
+   let dirs = [[(r+i,c) | i <- [-3..3]], [(r,c+i) | i <- [-3..3]], [(r+i,c+i) | i <- [-3..3]], [(r+i,c-i) | i <- [-3..3]]] --list of list of coordinates
+       checkGrid = map (map (\coord -> lookup coord grid)) dirs --list of list of maybe players
+       checkWin = map checkFour checkGrid --list of Maybe Players
+   in if ((Just pl) `elem` checkWin) then Winner pl else Ongoing --later check for tie
+
+checkFour :: [Maybe Player] -> Maybe Player
+checkFour [] = Nothing
+checkFour (Just Red:Just Red:Just Red:Just Red:rest) = Just Red
+checkFour (Just Black:Just Black:Just Black:Just Black:rest) = Just Black
+checkFour (x:rest) = checkFour rest
+
+--story 2 testing
+list1 = [((1, 2), Red), ((1, 3), Red), ((1, 4), Red), ((1, 5), Red), ((2, 5), Red)]
+input1 = ((1, 5), Red)
+input2 = ((2, 5), Red)
+list2 = [((1, 2), Red), ((2, 2), Red), ((3, 2), Red), ((4, 2), Red)] --returns Red with input 3
+input3 = ((4, 2), Red)
+list3 = [((1, 2), Red), ((1, 3), Black), ((1, 4), Red), ((1, 5), Red)] --returns Ongoing with input1
+list4 = [((1, 1), Red), ((2, 2), Red), ((3, 3), Red), ((4, 4), Red)] --returns Red with input4
+input4 = ((4, 4), Red)
 
 -- STORY 3
 -- move (Player, Column) = //check for other tokens in column, row is next up, check if legalMove
@@ -45,9 +65,13 @@ makeMove :: Game -> Move -> Game
 makeMove game move = if move `elem` legalMoves game then updateBoard game move else game
 
 --STORY 4
--- (Within 6 rows and 7 columns (possible variable numbers))
+-- takes a grid and a column number and returns
+-- true if that column is not full of tokens
+isNotEmpty :: Grid -> Int -> Bool
+isNotEmpty grid column = isNothing $ lookup (6, column) grid
+
 legalMoves :: Game -> [Move]
-legalMoves = undefined
+legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
 -- STORY 5
 prettyPrint :: Grid -> String
