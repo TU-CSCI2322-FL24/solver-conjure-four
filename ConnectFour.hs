@@ -33,20 +33,14 @@ legalMoves = undefined
 
 -- STORY 5
 
-prettyPrint :: Grid -> Doc ann
-prettyPrint grid = vsep [ prettyRow r | r <- reverse [1..6]]
+prettyPrint :: Grid -> String
+prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
   where
-    prettyRow :: Row -> Doc ann
-    prettyRow r = hsep [ prettyCell r c | c <- [1..7]]
+    prettyRow :: Row -> String
+    prettyRow r = unwords [ prettyCell r c | c <- [1..7]]
     
-    prettyCell :: Row -> Column -> Doc ann
+    prettyCell :: Row -> Column -> String
     prettyCell r c = case lookup (Coordinate r c) grid of
-      Just Red   -> pretty "o"
-      Just Black -> pretty "x"
-      Nothing    -> pretty "."
-
--- Example usage
-main :: IO ()
-main = do
-  let grid = [(Coordinate 1 1, Red), (Coordinate 1 2, Black), (Coordinate 2 1, Red)]
-  putDoc (prettyPrint grid <> line)
+      Just Red   -> "o"
+      Just Black -> "x"
+      Nothing    -> "."
