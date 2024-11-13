@@ -1,14 +1,15 @@
-data Player = Red | Black
+import Data.Maybe
 
--- Do something to limit row/column to 6/7?
-type Coordinate = (Row, Column)
-type Row = Integer 
-type Column = Integer
+data Player = Red | Black deriving (Eq, Show)
+type Coordinate = (Row, Column) 
+
+type Row = Int
+type Column = Int
 
 type Token = (Coordinate, Player)
 type Grid = [Token]
 type Game = (Grid, Player) -- Current grid and whose turn it is
-type Move = (Player, Column)
+type Move = Column
 
 data Win = Winner Player | Ongoing | Tie deriving (Show, Eq)
 
@@ -43,9 +44,13 @@ move :: Game -> Move -> Game
 move = undefined
 
 --STORY 4
--- (Within 6 rows and 7 columns (possible variable numbers))
-legalMoves :: Grid -> [Move]
-legalMoves = undefined
+-- takes a grid and a column number and returns
+-- true if that column is not full of tokens
+isNotEmpty :: Grid -> Int -> Bool
+isNotEmpty grid column = isNothing $ lookup (6, column) grid
+
+legalMoves :: Game -> [Move]
+legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
 -- STORY 5
 prettyPrint :: Grid -> String
