@@ -74,5 +74,15 @@ legalMoves :: Game -> [Move]
 legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
 -- STORY 5
+
 prettyPrint :: Grid -> String
-prettyPrint = undefined
+prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
+  where
+    prettyRow :: Row -> String
+    prettyRow r = unwords [ prettyCell r c | c <- [1..7]]
+    
+    prettyCell :: Row -> Column -> String
+    prettyCell r c = case lookup (r, c) grid of
+      Just Red   -> "o"
+      Just Black -> "x"
+      Nothing    -> "."
