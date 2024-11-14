@@ -29,6 +29,8 @@ checkFour (Just Black:Just Black:Just Black:Just Black:rest) = Just Black
 checkFour (x:rest) = checkFour rest
 
 --story 2 testing
+list1, list2, list3, list4 :: Grid
+input1, input2, input3, input4 :: Token
 list1 = [((1, 2), Red), ((1, 3), Red), ((1, 4), Red), ((1, 5), Red), ((2, 5), Red)]
 input1 = ((1, 5), Red)
 input2 = ((2, 5), Red)
@@ -53,7 +55,7 @@ nextAvailableRow grid col = undefined
 --   in if null availableRows then Nothing else Just (head availableRows)
 
 updateBoard :: Game -> Move -> Game
-updateBoard (grid, currentPlayer) (player, col) = undefined
+updateBoard (grid, currentPlayer) col = undefined
 --   case nextAvailableRow grid col of
 --     Nothing -> (grid, currentPlayer)
 --     Just row -> 
