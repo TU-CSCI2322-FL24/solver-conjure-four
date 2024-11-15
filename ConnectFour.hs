@@ -41,27 +41,20 @@ list4 = [((1, 1), Red), ((2, 2), Red), ((3, 3), Red), ((4, 4), Red)] --returns R
 input4 = ((4, 4), Red)
 
 -- STORY 3
--- move (Player, Column) = //check for other tokens in column, row is next up, check if legalMove
-
 nextPlayer :: Player -> Player
 nextPlayer Red = Black
 nextPlayer Black = Red
 
-nextAvailableRow :: Grid -> Column -> Maybe Row
-nextAvailableRow grid col = undefined
---   let allRows = [0..5]
---       occupiedRows = [row | ((row c), _) <- grid, c == col]
---       availableRows = filter (`notElem` occupiedRows) allRows
---   in if null availableRows then Nothing else Just (head availableRows)
-
 updateBoard :: Game -> Move -> Game
-updateBoard (grid, currentPlayer) col = undefined
---   case nextAvailableRow grid col of
---     Nothing -> (grid, currentPlayer)
---     Just row -> 
---       let newToken = ((row, col), player)
---           newGrid = newToken : grid
---       in (newGrid, nextPlayer player)
+updateBoard (grid, currentPlayer) col = 
+    let aux grid col row = 
+            case lookup (row, col) grid of
+                Just player -> aux grid col (row+1)
+                Nothing -> 
+                    let newToken = ((row, col), currentPlayer)
+                        newGrid = newToken : grid
+                    in (newGrid, nextPlayer currentPlayer)
+    in aux grid col 1
 
 makeMove :: Game -> Move -> Game
 makeMove game move = if move `elem` legalMoves game then updateBoard game move else game
