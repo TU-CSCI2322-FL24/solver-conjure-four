@@ -88,3 +88,59 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Just Red   -> "o"
       Just Black -> "x"
       Nothing    -> "."
+
+
+
+
+-- SPRINT 2
+
+-- STORY 9
+-- Considers every valid move, the resulting game state, and chooses the move with the 
+-- best outcome for the current player. This will involve recursively searching through 
+-- the game states that result from that move. Think Scavenge!
+whoWillWin :: Game -> Win
+whoWillWin = undefined
+
+
+-- STORY 10
+-- Given a game state, you should  return a move that can force a win for the current 
+-- player. Failing that, return a move that can force a tie for the current player.
+-- This is very similar to whoWillWin, but keeps track of what the first move was that 
+-- could force that outcome. That means you should not use this function to write whoWillWin.
+bestMove :: Game -> Move
+bestMove = undefined
+
+
+-- STORY 12
+-- Takes a string in your text format and returns the corresponding game
+readGame :: String -> Game
+readGame = undefined
+
+
+-- STORY 13
+-- Takes a game and turns it into a string in your text format
+showGame :: Game -> String
+showGame = undefined
+
+
+-- STORY 14
+-- Define a series of IO actions to wrap around these functions, as well as bestMove, and 
+-- define a main IO action. You will need to build four I/O actions: one each to read and 
+-- write game states from a file, one that computes and prints the winning move, and a simple main action.
+
+-- At least some of these actions will need to be in a Main module that imports your other module(s).
+writeGame :: Game -> FilePath -> IO ()
+writeGame = undefined
+
+loadGame :: FilePath -> IO Game
+loadGame = undefined
+
+-- Computes the best move and prints it to standard output. 
+-- For full credit, also print the outcome that moves forces.
+putBestMove :: Game -> IO ()
+putBestMove = undefined
+
+-- Reads a file name from standard input or the arguments, 
+-- loads the game, and prints the best move
+main :: IO ()
+main = undefined
