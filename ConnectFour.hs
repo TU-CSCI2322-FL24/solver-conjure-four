@@ -44,3 +44,7 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Just Red   -> "o"
       Just Black -> "x"
       Nothing    -> "."
+
+-- STORY 11
+-- STORY 12
+-- STORY 13
