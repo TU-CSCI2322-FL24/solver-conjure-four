@@ -104,16 +104,61 @@ bestMove :: Game -> Move
 bestMove = undefined
 
 
+-- STORY 11
+-- Given a game state, you should  return a move that can force a win for the current player.
+-- Failing that, return a move that can force a tie for the current player.
+-- This is very similar to whoWillWin, but keeps track of what the first move was that could force that outcome.
+-- That means you should not use this function to write whoWillWin
+showGame :: Game -> String
+showGame (grid, currentPlayer) =
+    let tokens = unlines $ map showToken grid
+        turn = "Turn:" ++ showPlayer currentPlayer
+    in tokens ++ turn
+  where
+    showToken :: Token -> String
+    showToken ((r, c), player) = show r ++ "," ++ show c ++ ":" ++ showPlayer player
+
+    showPlayer :: Player -> String
+    showPlayer Red = "R"
+    showPlayer Black = "B"
+
 -- STORY 12
 -- Takes a string in your text format and returns the corresponding game
 readGame :: String -> Game
-readGame = undefined
+readGame str =
+    let lines' = lines str
+        tokens = mapMaybe parseToken (init lines')
+        currentPlayer = parsePlayer (drop 5 (last lines'))
+    in (tokens, currentPlayer)
+  where
+    parseToken :: String -> Maybe Token
+    parseToken line =
+      case span (/= ':') line of
+        (coords, ':':player) ->
+          let (r, ',':c) = span (/= ',') coords
+          in Just ((read r, read c), parsePlayer player)
+        _ -> Nothing
+
+    parsePlayer :: String -> Player
+    parsePlayer "R" = Red
+    parsePlayer "B" = Black
+    parsePlayer _ = error "Invalid player symbol"
 
 
 -- STORY 13
 -- Takes a game and turns it into a string in your text format
-showGame :: Game -> String
-showGame = undefined
+printGame :: Game -> String
+printGame (grid, currentPlayer) =
+    let tokens = unlines $ map showToken grid
+        turn = "Turn:" ++ showPlayer currentPlayer
+    in tokens ++ turn
+  where
+    showToken :: Token -> String
+    showToken ((r, c), player) = show r ++ "," ++ show c ++ ":" ++ showPlayer player
+
+    showPlayer :: Player -> String
+    showPlayer Red = "R"
+    showPlayer Black = "B"
 
 
 -- STORY 14
