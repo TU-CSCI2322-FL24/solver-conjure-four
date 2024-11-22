@@ -92,8 +92,26 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin = undefined
+whoWillWin game = if moves>0 then  ( 
+                  if possibleWinner==Ongoing then whoWillWin newGameState else possibleWinner
+                  ) else checkAllforWin (fst game)
+   where moves = legalMoves game
+         best = snd $ maximum [ (moveWorth m, m) | m <- moves ]
+         newGameState = makeMove game best
+         possibleWinner = winState (head (fst game)) (fst game)
 
+moveWorth :: Move -> Game -> Int
+moveWorth move (grid, pl) = maximum count
+   where row = head [ r | r <- [1..6], (lookup (r, move) grid).isNothing]
+         dirs = [[(row+i,move) | i <- [-3..3]], [(row,move+i) | i <- [-3..3]], [(row+i,move+i) | i <- [-3..3]], [(row+i,move-i) | i <- [-3..3]]] --list of list of coordinates
+         checkGrid = map (map (\coord -> lookup coord grid)) dirs
+         count = map (\lst -> countInARow pl lst) checkGrid
+
+countInARow :: Player -> Grid -> Int
+countInARow pl tokens = aux 0 0 tokens
+   where aux _ most [] = most
+         aux count most (t:ts) = if t==(Just pl) then aux (count+1) most ts else (
+                                 if count>most then aux 0 count ts else aux 0 most ts)
 
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
