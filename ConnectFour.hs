@@ -102,26 +102,28 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin game = if moves>0 then  ( 
+whoWillWin game = if (length moves)>0 then  ( 
                   if possibleWinner==Ongoing then whoWillWin newGameState else possibleWinner
                   ) else checkAllforWin (fst game)
    where moves = legalMoves game
-         best = snd $ maximum [ (moveWorth m, m) | m <- moves ]
+         best = snd $ maximum [ (moveWorth m game, m) | m <- moves ]
          newGameState = makeMove game best
          possibleWinner = winState (head (fst game)) (fst game)
 
 moveWorth :: Move -> Game -> Int
 moveWorth move (grid, pl) = maximum count
-   where row = head [ r | r <- [1..6], (lookup (r, move) grid).isNothing]
+   where row = head [ r | r <- [1..6], isNothing (lookup (r, move) grid)]
          dirs = [[(row+i,move) | i <- [-3..3]], [(row,move+i) | i <- [-3..3]], [(row+i,move+i) | i <- [-3..3]], [(row+i,move-i) | i <- [-3..3]]] --list of list of coordinates
-         checkGrid = map (map (\coord -> lookup coord grid)) dirs
+         coordsToPlayers coords = catMaybes (map (\coord -> lookup coord grid) coords)
+         checkGrid = map coordsToPlayers dirs
          count = map (\lst -> countInARow pl lst) checkGrid
 
-countInARow :: Player -> Grid -> Int
+countInARow :: Player -> [Player] -> Int
 countInARow pl tokens = aux 0 0 tokens
    where aux _ most [] = most
-         aux count most (t:ts) = if t==(Just pl) then aux (count+1) most ts else (
+         aux count most (t:ts) = if t == pl then aux (count+1) most ts else (
                                  if count>most then aux 0 count ts else aux 0 most ts)
+
 
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
@@ -129,7 +131,14 @@ countInARow pl tokens = aux 0 0 tokens
 -- This is very similar to whoWillWin, but keeps track of what the first move was that 
 -- could force that outcome. That means you should not use this function to write whoWillWin.
 bestMove :: Game -> Move
-bestMove = undefined
+bestMove (grid, player) = 
+    let aux [m] = m
+        aux (m:ms) = 
+            let who = whoWillWin (makeMove (grid, player) m)
+            in case who of
+                Winner p -> if p == player then m else aux ms
+                Tie -> aux ms
+    in aux (legalMoves (grid, player))
 
 
 -- STORY 11
