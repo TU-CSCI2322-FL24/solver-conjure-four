@@ -87,6 +87,16 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
 
 -- SPRINT 2
 
+-- Story 8
+
+winTie :: [Move] -> Grid -> Win
+winTie legalmoves grid = if (length legalmoves) == 0 then checkAllforWin grid else Ongoing
+
+checkAllforWin :: Grid -> Win
+checkAllforWin [] = Tie
+checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else winner
+   where winner = winState token rest
+
 -- STORY 9
 -- Considers every valid move, the resulting game state, and chooses the move with the 
 -- best outcome for the current player. This will involve recursively searching through 
