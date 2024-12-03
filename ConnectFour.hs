@@ -101,29 +101,21 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- Considers every valid move, the resulting game state, and chooses the move with the 
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
-whoWillWin :: Game -> Win
-whoWillWin game = if (length moves)>0 then  ( 
-                  if possibleWinner==Ongoing then whoWillWin newGameState else possibleWinner
-                  ) else checkAllforWin (fst game)
+
+chooseMove :: Game -> Maybe Move
+chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
    where moves = legalMoves game
-         best = snd $ maximum [ (moveWorth m game, m) | m <- moves ]
-         newGameState = makeMove game best
-         possibleWinner = winState (head (fst game)) (fst game)
+         distanceToWin = [ (moveValue x game, x) | x <- moves ]
 
-moveWorth :: Move -> Game -> Int
-moveWorth move (grid, pl) = maximum count
-   where row = head [ r | r <- [1..6], isNothing (lookup (r, move) grid)]
-         dirs = [[(row+i,move) | i <- [-3..3]], [(row,move+i) | i <- [-3..3]], [(row+i,move+i) | i <- [-3..3]], [(row+i,move-i) | i <- [-3..3]]] --list of list of coordinates
-         coordsToPlayers coords = catMaybes (map (\coord -> lookup coord grid) coords)
-         checkGrid = map coordsToPlayers dirs
-         count = map (\lst -> countInARow pl lst) checkGrid
-
-countInARow :: Player -> [Player] -> Int
-countInARow pl tokens = aux 0 0 tokens
-   where aux _ most [] = most
-         aux count most (t:ts) = if t == pl then aux (count+1) most ts else (
-                                 if count>most then aux 0 count ts else aux 0 most ts)
-
+moveValue :: Move -> Game -> Int
+moveValue move game = value
+   where newGameState = makeMove game move
+         moves = legalMoves newGameState
+         possibleWinner = winState (head (fst newGameState)) (fst newGameState)
+         value = if possibleWinner==Ongoing then
+                 (if (length moves)==0 then (-1) else (if aux>0 then aux+1 else aux))
+                 else 0
+         aux = maximum [ moveValue x newGameState | x <- moves ]
 
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
