@@ -1,3 +1,5 @@
+module ConnectFour where
+    
 import Data.Maybe
 
 data Player = Red | Black deriving (Eq, Show)
@@ -101,6 +103,8 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- Considers every valid move, the resulting game state, and chooses the move with the 
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
+whoWillWin :: Game -> Win
+whoWillWin = undefined
 
 chooseMove :: Game -> Maybe Move
 chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
@@ -188,26 +192,3 @@ printGame (grid, currentPlayer) =
     showPlayer :: Player -> String
     showPlayer Red = "R"
     showPlayer Black = "B"
-
-
--- STORY 14
--- Define a series of IO actions to wrap around these functions, as well as bestMove, and 
--- define a main IO action. You will need to build four I/O actions: one each to read and 
--- write game states from a file, one that computes and prints the winning move, and a simple main action.
-
--- At least some of these actions will need to be in a Main module that imports your other module(s).
-writeGame :: Game -> FilePath -> IO ()
-writeGame = undefined
-
-loadGame :: FilePath -> IO Game
-loadGame = undefined
-
--- Computes the best move and prints it to standard output. 
--- For full credit, also print the outcome that moves forces.
-putBestMove :: Game -> IO ()
-putBestMove = undefined
-
--- Reads a file name from standard input or the arguments, 
--- loads the game, and prints the best move
-main :: IO ()
-main = undefined
