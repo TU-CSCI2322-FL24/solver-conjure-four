@@ -82,9 +82,6 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Just Black -> "x"
       Nothing    -> "."
 
-
-
-
 -- SPRINT 2
 
 -- Story 8
@@ -124,7 +121,6 @@ countInARow pl tokens = aux 0 0 tokens
          aux count most (t:ts) = if t == pl then aux (count+1) most ts else (
                                  if count>most then aux 0 count ts else aux 0 most ts)
 
-
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
 -- player. Failing that, return a move that can force a tie for the current player.
@@ -140,24 +136,8 @@ bestMove (grid, player) =
                 Tie -> aux ms
     in aux (legalMoves (grid, player))
 
-
 -- STORY 11
--- Given a game state, you should  return a move that can force a win for the current player.
--- Failing that, return a move that can force a tie for the current player.
--- This is very similar to whoWillWin, but keeps track of what the first move was that could force that outcome.
--- That means you should not use this function to write whoWillWin
-showGame :: Game -> String
-showGame (grid, currentPlayer) =
-    let tokens = unlines $ map showToken grid
-        turn = "Turn:" ++ showPlayer currentPlayer
-    in tokens ++ turn
-  where
-    showToken :: Token -> String
-    showToken ((r, c), player) = show r ++ "," ++ show c ++ ":" ++ showPlayer player
-
-    showPlayer :: Player -> String
-    showPlayer Red = "R"
-    showPlayer Black = "B"
+-- Done for stories 12 and 13
 
 -- STORY 12
 -- Takes a string in your text format and returns the corresponding game
@@ -181,7 +161,6 @@ readGame str =
     parsePlayer "B" = Black
     parsePlayer _ = error "Invalid player symbol"
 
-
 -- STORY 13
 -- Takes a game and turns it into a string in your text format
 printGame :: Game -> String
@@ -197,25 +176,17 @@ printGame (grid, currentPlayer) =
     showPlayer Red = "R"
     showPlayer Black = "B"
 
+-- STORY 20 
+-- Create at least four more test input files. These should be games that are further from the end, but at an interesting state. Include games where one player is dominating, games that are evenly matched, and games near the start.
 
--- STORY 14
--- Define a series of IO actions to wrap around these functions, as well as bestMove, and 
--- define a main IO action. You will need to build four I/O actions: one each to read and 
--- write game states from a file, one that computes and prints the winning move, and a simple main action.
 
--- At least some of these actions will need to be in a Main module that imports your other module(s).
-writeGame :: Game -> FilePath -> IO ()
-writeGame = undefined
 
-loadGame :: FilePath -> IO Game
-loadGame = undefined
+-- STORY 24
+--Support the -h, --help flag, which should print out a good help message and quit the program.
 
--- Computes the best move and prints it to standard output. 
--- For full credit, also print the outcome that moves forces.
-putBestMove :: Game -> IO ()
-putBestMove = undefined
 
--- Reads a file name from standard input or the arguments, 
--- loads the game, and prints the best move
-main :: IO ()
-main = undefined
+
+-- STORY 25: Support the -m <move>, --move <move> flag, which should <move> and print out the resulting board to stdout.
+-- You should print in the input format. If the -v flag is provided, you may pretty-print instead.
+-- The move should be 1-indexed. If a move requires multiple values, the move should be a tuple of numbers separated by a comma with no space. You may use letters instead of numbers if you choose, which should be lower-cased and 'a'-indexed.
+-- Estimate: 1, for full credit.
