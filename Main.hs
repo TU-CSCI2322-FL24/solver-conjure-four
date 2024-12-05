@@ -3,6 +3,7 @@ module Main where
 import System.IO
 import System.Environment
 import ConnectFour
+import TestGrids
 import Data.Maybe
 import System.Console.GetOpt
 
