@@ -112,7 +112,7 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin = undefined
+whoWillWin (grid, pl) = undefined
 
 chooseMove :: Game -> Maybe Move
 chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
@@ -265,8 +265,3 @@ moveValueCutOff move (grid, pl) cutOff = value
          min = minimum values
          max = maximum values
          checker = if min<0 then min+1 else (if max>0 then max else 0) 
-
-
-
-
-
