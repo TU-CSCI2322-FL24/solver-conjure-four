@@ -265,18 +265,18 @@ whoMightWin game cutOff = if (length moves)=0 then Nothing else
 
 moveValueCutOff :: Move -> Game -> Int -> Int
 moveValueCutOff move (grid, pl) cutOff = 
-   where newGameState = makeMove game move
+   where newGameState = makeMove (grid, pl) move
          moves = legalmoves newGameState
          possibleWinner = winState (head (fst newGameState)) (fst newGameState)
          value = if possibleWinner==Ongoing then
                     (if cutOff==0 then 
                        (let (rater = (rateGame newGameState)) in (if rater>0 then rater else 0))
                     else checker)
-                 else (if possibleWinner==pl then (-1) else 0)
+                 else (if possibleWinner==pl then (-1000) else 0)
          values = [ moveValue x newGameState (cutOff-1) | x <- moves ]
          min = minimum values
          max = maximum values
-         checker = if min<0 then min-1 else (if max>0 then max else 0) 
+         checker = if min<0 then min+1 else (if max>0 then max else 0) 
 
 
 
