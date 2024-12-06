@@ -3,6 +3,7 @@ module Main where
 import System.IO
 import System.Environment
 import ConnectFour
+import TestGrids
 import Data.Maybe
 import System.Console.GetOpt
 
@@ -33,14 +34,19 @@ loadGame flpath =
     do  fileStr <- readFile flpath
         return (readGame fileStr)
 
--- TODO going to revisit this - Will
--- format better and also print outcome of that move (using whoWillWin I suppose)
 -- Computes the best move and prints it to standard output. 
 -- For full credit, also print the outcome that moves forces.
 putBestMove :: Game -> IO ()
 putBestMove game = 
     do  let move = bestMove game
-        putStrLn (show move)
+        putStrLn $ "The best move for this game is column " ++ show (bestMove game)
+        let outcome = whoWillWin game
+        putStrLn $ "This move will force the following outcome: " ++ (showOutcome outcome)
+
+showOutcome :: Win -> String
+showOutcome (Winner pl) = "Player " ++ (show pl) ++ " wins"
+showOutcome Tie = "Tie"
+showOutcome _ = "whoWillWin returned Ongoing or an invalid Win state"
 
 -- Reads a file name from standard input or the arguments, 
 -- loads the game, and prints the best move
@@ -54,4 +60,4 @@ main =
             do  let flpath = head inputs
                 fileStr <- readFile flpath
                 let game = readGame fileStr
-                putStrLn $ "The best move for this game is " ++ show (bestMove game)
+                putBestMove game

@@ -1,5 +1,5 @@
 module ConnectFour where
-    
+
 import Data.Maybe
 
 data Player = Red | Black deriving (Eq, Show)
@@ -70,6 +70,13 @@ isNotEmpty grid column = isNothing $ lookup (6, column) grid
 legalMoves :: Game -> [Move]
 legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
+-- Story 4 Test Cases
+-- legalMoves (fullGrid, _) == []
+-- legalMoves (emptyGrid, _) == [1, 2, 3, 4, 5, 6, 7]
+-- legalMoves (fullColGrid, _) = [2, 3, 4, 5, 6, 7]
+-- legalMoves (oneMoveLeft, _) = [7]
+-- legalMoves (fourMovesLeft, _) = [4, 5]
+
 -- STORY 5
 
 prettyPrint :: Grid -> String
@@ -135,6 +142,13 @@ bestMove (grid, player) =
                 Winner p -> if p == player then m else aux ms
                 Tie -> aux ms
     in aux (legalMoves (grid, player))
+
+-- Story 10 Test Cases
+-- bestMove (oneMoveLeft, Red) == 7
+-- bestMove (twoMovesLeft, Red) == 4 or 5
+-- bestMove (twoMovesLeft, Black) == 4
+-- bestMove (fourMovesLeft, Red) == 4
+-- bestMove (fourMovesLeft, Black) == 5
 
 
 -- STORY 11
