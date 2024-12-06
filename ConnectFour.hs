@@ -1,3 +1,5 @@
+module ConnectFour where
+    
 import Data.Maybe
 
 data Player = Red | Black deriving (Eq, Show)
@@ -102,28 +104,22 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin game = if (length moves)>0 then  ( 
-                  if possibleWinner==Ongoing then whoWillWin newGameState else possibleWinner
-                  ) else checkAllforWin (fst game)
+whoWillWin = undefined
+
+chooseMove :: Game -> Maybe Move
+chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
    where moves = legalMoves game
-         best = snd $ maximum [ (moveWorth m game, m) | m <- moves ]
-         newGameState = makeMove game best
-         possibleWinner = winState (head (fst game)) (fst game)
+         distanceToWin = [ (moveValue x game, x) | x <- moves ]
 
-moveWorth :: Move -> Game -> Int
-moveWorth move (grid, pl) = maximum count
-   where row = head [ r | r <- [1..6], isNothing (lookup (r, move) grid)]
-         dirs = [[(row+i,move) | i <- [-3..3]], [(row,move+i) | i <- [-3..3]], [(row+i,move+i) | i <- [-3..3]], [(row+i,move-i) | i <- [-3..3]]] --list of list of coordinates
-         coordsToPlayers coords = catMaybes (map (\coord -> lookup coord grid) coords)
-         checkGrid = map coordsToPlayers dirs
-         count = map (\lst -> countInARow pl lst) checkGrid
-
-countInARow :: Player -> [Player] -> Int
-countInARow pl tokens = aux 0 0 tokens
-   where aux _ most [] = most
-         aux count most (t:ts) = if t == pl then aux (count+1) most ts else (
-                                 if count>most then aux 0 count ts else aux 0 most ts)
-
+moveValue :: Move -> Game -> Int
+moveValue move game = value
+   where newGameState = makeMove game move
+         moves = legalMoves newGameState
+         possibleWinner = winState (head (fst newGameState)) (fst newGameState)
+         value = if possibleWinner==Ongoing then
+                 (if (length moves)==0 then (-1) else (if aux>0 then aux+1 else aux))
+                 else 0
+         aux = maximum [ moveValue x newGameState | x <- moves ]
 
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
@@ -198,31 +194,7 @@ printGame (grid, currentPlayer) =
     showPlayer Black = "B"
 
 
--- STORY 14
--- Define a series of IO actions to wrap around these functions, as well as bestMove, and 
--- define a main IO action. You will need to build four I/O actions: one each to read and 
--- write game states from a file, one that computes and prints the winning move, and a simple main action.
-
--- At least some of these actions will need to be in a Main module that imports your other module(s).
-writeGame :: Game -> FilePath -> IO ()
-writeGame = undefined
-
-loadGame :: FilePath -> IO Game
-loadGame = undefined
-
--- Computes the best move and prints it to standard output. 
--- For full credit, also print the outcome that moves forces.
-putBestMove :: Game -> IO ()
-putBestMove = undefined
-
--- Reads a file name from standard input or the arguments, 
--- loads the game, and prints the best move
-main :: IO ()
-main = undefined
-
 -- Story 17
-
-
 type Rating = Int
 rateGame :: Game -> Rating
 rateGame (grid, pl) = if (possibleWinner==Ongoing) then valCurrPL - valOthPl else (if possibleWinner==pl) then 100 else (-100))
