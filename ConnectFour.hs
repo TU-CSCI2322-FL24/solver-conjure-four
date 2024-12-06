@@ -227,23 +227,58 @@ type Rating = Int
 rateGame :: Game -> Rating
 rateGame (grid, pl) = if (possibleWinner==Ongoing) then valCurrPL - valOthPl else (if possibleWinner==pl) then 100 else (-100))
    where possibleWinner = winState (head grid) (grid, pl)
-      rows = [ [ (r,c) | c <- [1..7] ] | r <- [1..6] ]
-     	cols = [ [ (r,c) | r <- [1..6] ] | c <- [1..7] ]
-     	positive = nub $ [ [(x+i,y+i) | i <- [0..5] , x+i<=6] | (x,y) <- [ (r,1) | r <- [1..3] ] ] ++ [ [(x+i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (1, c) | c <- [2..4] ] ]
-     	negative = nub $ [ [(x-i,y+i) | i <- [0..5], x-i>=1 ] | (x,y) <- [ (r,1) | r <- [4..6] ] ] ++ [ [(x-i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (6, c) | c <- [2..4] ] ]
-      all = rows ++ cols ++ positive ++ negative
-     	valCurrPl = map (\lst -> rateFour pl lst grid) all
-      othPl = if pl==Red then Black else Red
-      valOthPl = map (\lst -> rateFour othPl lst grid) all
+         rows = [ [ (r,c) | c <- [1..7] ] | r <- [1..6] ]
+     	 cols = [ [ (r,c) | r <- [1..6] ] | c <- [1..7] ]
+     	 positive = nub $ [ [(x+i,y+i) | i <- [0..5] , x+i<=6] | (x,y) <- [ (r,1) | r <- [1..3] ] ] ++ [ [(x+i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (1, c) | c <- [2..4] ] ]
+     	 negative = nub $ [ [(x-i,y+i) | i <- [0..5], x-i>=1 ] | (x,y) <- [ (r,1) | r <- [4..6] ] ] ++ [ [(x-i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (6, c) | c <- [2..4] ] ]
+         all = rows ++ cols ++ positive ++ negative
+     	 valCurrPl = map (\lst -> rateFour pl lst grid) all
+         othPl = if pl==Red then Black else Red
+         valOthPl = map (\lst -> rateFour othPl lst grid) all
     	 
 
 rateFour :: Player -> [[(Int,Int)]] -> Grid -> Rating
 rateFour pl coords grid = aux 0 colors
    where colors = map (map (\coord -> lookup coord grid)) coords
-     	aux n [] = n
-     	aux n (x:xs) = aux (count (change x n)) xs
-     	change [] = []
-     	change (y:ys) = ((y == Just pl)||(isNothing y)):(change ys)
-     	count [] n = n
-     	count (True:True:True:True:zs) n = count zs (n+1)
-     	count (x:rest) n = count rest n
+     	 aux n [] = n
+     	 aux n (x:xs) = aux (count (change x n)) xs
+     	 change [] = []
+     	 change (y:ys) = ((y == Just pl)||(isNothing y)):(change ys)
+     	 count [] n = n
+     	 count (True:True:True:True:zs) n = count zs (n+1)
+     	 count (x:rest) n = count rest n
+
+
+
+
+-- Story 18
+
+whoMightWin :: Game -> Int -> Maybe (Rating, Move)
+whoMightWin game cutOff = if (length moves)=0 then Nothing else
+   let moves = legalMoves game
+       values = [ (moveValue x game cutOff, x) | x <- moves ]
+       min = minimum values
+       max = maximum values
+       checker = if (fst min)<0 then (snd min) else (if (fst max)>0 then (snd max) else Nothing)
+   in if (isNothing checker) then Nothing else ((rateGame (makemove game checker)), checker)
+
+
+moveValueCutOff :: Move -> Game -> Int -> Int
+moveValueCutOff move (grid, pl) cutOff = 
+   where newGameState = makeMove game move
+         moves = legalmoves newGameState
+         possibleWinner = winState (head (fst newGameState)) (fst newGameState)
+         value = if possibleWinner==Ongoing then
+                    (if cutOff==0 then 
+                       (let (rater = (rateGame newGameState)) in (if rater>0 then rater else 0))
+                    else checker)
+                 else (if possibleWinner==pl then (-1) else 0)
+         values = [ moveValue x newGameState (cutOff-1) | x <- moves ]
+         min = minimum values
+         max = maximum values
+         checker = if min<0 then min-1 else (if max>0 then max else 0) 
+
+
+
+
+
