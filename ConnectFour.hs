@@ -256,17 +256,17 @@ whoMightWin (grid, pl) cutOff = aux moves (grid, pl) cutOff
          loseCondition = (-(winCondition))
          f x y = if pl==Red then (max x y) else (min x y)
          aux [] _ _ = Nothing
-         aux [m] gme 0 = (rateGame (makeMove gme m), m)
+         aux [m] gme 0 = Just (rateGame (makeMove gme m), m)
          aux (m:ms) gme 0 = let newGameState = makeMove gme m
                                 rate = rateGame newGameState
-                            in if (rate==winCondition)||((length newMoves)==0) then (rate, m) else f (rate, m) (aux ms gme 0)
+                            in if (rate==winCondition)||((length newMoves)==0) then (Just (rate, m)) else f (Just (rate, m)) (aux ms gme 0)
          aux [m] gme cutOff = let newGameState = makeMove gme m
                                   newMoves = legalMoves newGameState
                                   rate = rateGame newGameState
-                              in if (rate==1000)||(rate==(-1000))||((length newMoves)==0) then (rate, m) else (aux newMoves newGameState (cutOff-1))
+                              in if (rate==1000)||(rate==(-1000))||((length newMoves)==0) then (Just (rate, m)) else (aux newMoves newGameState (cutOff-1))
          aux (m:ms) gme cutOff = let newGameState = makeMove gme m
                                      newMoves = legalMoves newGameState
                                      rate = rateGame newGameState
-                                 in if (rate==winCondition)||((length newMoves)==0) then (rate, m) else 
+                                 in if (rate==winCondition)||((length newMoves)==0) then (Just (rate, m)) else 
                                     (if rate==loseCondition then aux ms gme cutOff else f (aux ms gme cutOff) (aux newMoves newGameState (cutOff-1)))
 
