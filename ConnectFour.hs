@@ -223,7 +223,7 @@ rateFour coords grid = (aux 0 Red colors) - (aux 0 Black colors)
 
 -- Story 18 - Edited in Story 19
 
-whoMightWin :: Game -> Int -> Maybe (Rating, Move)
+{-whoMightWin :: Game -> Int -> Maybe (Rating, Move)
 whoMightWin game cutOff = if (length moves)=0 then Nothing else
    let moves = legalMoves game
        values = [ (moveValue x game cutOff, x) | x <- moves ]
@@ -246,9 +246,27 @@ moveValueCutOff move (grid, pl) cutOff =
          values = [ moveValue x newGameState (cutOff-1) | x <- moves ]
          min = minimum values
          max = maximum values
-         checker = if min<0 then min+1 else (if max>0 then max else 0)
+         checker = if min<0 then min+1 else (if max>0 then max else 0)-}
 
 
-
-
+whoMightWin :: Game -> Int -> Maybe (Rating, Move)
+whoMightWin (grid, pl) cutOff = aux moves (grid, pl) cutOff
+   where moves = legalMoves (grid, pl)
+         winCondition = if pl==Red then 1000 else (-1000)
+         loseCondition = (-(winCondition))
+         f x y = if pl==Red then (max x y) else (min x y)
+         aux [] _ _ = Nothing
+         aux [m] gme 0 = (rateGame (makeMove gme m), m)
+         aux (m:ms) gme 0 = let newGameState = makeMove gme m
+                                rate = rateGame newGameState
+                            in if (rate==winCondition)||((length newMoves)==0) then (rate, m) else f (rate, m) (aux ms gme 0)
+         aux [m] gme cutOff = let newGameState = makeMove gme m
+                                  newMoves = legalMoves newGameState
+                                  rate = rateGame newGameState
+                              in if (rate==1000)||(rate==(-1000))||((length newMoves)==0) then (rate, m) else (aux newMoves newGameState (cutOff-1))
+         aux (m:ms) gme cutOff = let newGameState = makeMove gme m
+                                     newMoves = legalMoves newGameState
+                                     rate = rateGame newGameState
+                                 in if (rate==winCondition)||((length newMoves)==0) then (rate, m) else 
+                                    (if rate==loseCondition then aux ms gme cutOff else f (aux ms gme cutOff) (aux newMoves newGameState (cutOff-1)))
 
