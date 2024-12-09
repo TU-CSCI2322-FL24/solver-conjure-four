@@ -1,6 +1,7 @@
 module ConnectFour where
-    
+
 import Data.Maybe
+import Data.List (nub)
 
 data Player = Red | Black deriving (Eq, Show)
 type Coordinate = (Row, Column) 
@@ -70,6 +71,13 @@ isNotEmpty grid column = isNothing $ lookup (6, column) grid
 legalMoves :: Game -> [Move]
 legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 
+-- Story 4 Test Cases
+-- legalMoves (fullGrid, _) == []
+-- legalMoves (emptyGrid, _) == [1, 2, 3, 4, 5, 6, 7]
+-- legalMoves (fullColGrid, _) = [2, 3, 4, 5, 6, 7]
+-- legalMoves (oneMoveLeft, _) = [7]
+-- legalMoves (fourMovesLeft, _) = [4, 5]
+
 -- STORY 5
 
 prettyPrint :: Grid -> String
@@ -104,7 +112,7 @@ checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else w
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin = undefined
+whoWillWin (grid, pl) = undefined
 
 chooseMove :: Game -> Maybe Move
 chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
@@ -135,6 +143,13 @@ bestMove (grid, player) =
                 Winner p -> if p == player then m else aux ms
                 Tie -> aux ms
     in aux (legalMoves (grid, player))
+
+-- Story 10 Test Cases
+-- bestMove (oneMoveLeft, Red) == 7
+-- bestMove (twoMovesLeft, Red) == 4 or 5
+-- bestMove (twoMovesLeft, Black) == 4
+-- bestMove (fourMovesLeft, Red) == 4
+-- bestMove (fourMovesLeft, Black) == 5
 
 
 -- STORY 11
@@ -194,6 +209,7 @@ printGame (grid, currentPlayer) =
     showPlayer Black = "B"
 
 
+
 -- Story 17 - Edited in Story 19
 type Rating = Int
 rateGame :: Game -> Rating
@@ -230,20 +246,20 @@ whoMightWin game cutOff = if (length moves)=0 then Nothing else
        min = minimum values
        max = maximum values
        checker = if (fst min)<0 then (snd min) else (if (fst max)>0 then (snd max) else Nothing)
-   in if (isNothing checker) then Nothing else ((rateGame (makemove game checker)), checker)
+   in if (isNothing checker) then Nothing else ((rateGame (makeMove game checker)), checker)
 
 
 moveValueCutOff :: Move -> Game -> Int -> Int
-moveValueCutOff move (grid, pl) cutOff = 
+moveValueCutOff move (grid, pl) cutOff = value
    where newGameState = makeMove (grid, pl) move
-         moves = legalmoves newGameState
+         moves = legalMoves newGameState
          possibleWinner = winState (head (fst newGameState)) (fst newGameState)
          value = if possibleWinner==Ongoing then
                     (if cutOff==0 then 
-                       (let (rater = (rateGame newGameState)) in (if rater>0 then rater else 0))
+                        (let rater = (rateGame newGameState) in (if rater>0 then rater else 0))
                     else checker)
                  else (if possibleWinner==pl then (-1000) else 0)
-         values = [ moveValue x newGameState (cutOff-1) | x <- moves ]
+         values = [ moveValueCutOff x newGameState (cutOff-1) | x <- moves ]
          min = minimum values
          max = maximum values
          checker = if min<0 then min+1 else (if max>0 then max else 0)-}
@@ -269,4 +285,3 @@ whoMightWin (grid, pl) cutOff = aux moves (grid, pl) cutOff
                                      rate = rateGame newGameState
                                  in if (rate==winCondition)||((length newMoves)==0) then (Just (rate, m)) else 
                                     (if rate==loseCondition then aux ms gme cutOff else f (aux ms gme cutOff) (aux newMoves newGameState (cutOff-1)))
-
