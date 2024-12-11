@@ -7,6 +7,7 @@ import TestGrids
 import Data.Maybe
 import System.Console.GetOpt
 import Data.List
+import Control.Monad (when)
 
 data Flag = WinResult | Number String | Help | MoveNum String | Verbose | Interactive deriving (Show, Eq)
 
@@ -37,8 +38,8 @@ main =
 -- Add more cases here to cover more flags
 dispatch :: [Flag] -> Game -> IO ()
 dispatch flags game
-    | any isNumber flags     = putBestMoveDepth game (getNumber flags)
-    | WinResult `elem` flags = putBestMove game
+    | any isNumber flags     = putBestMoveDepth game (getNumber flags) (Verbose `elem` flags)
+    | WinResult `elem` flags = putBestMove game (Verbose `elem` flags)
     | any isMove flags       = handleMove game (getMove flags) (Verbose `elem` flags)
     | otherwise              = undefined -- STORY 21
 
@@ -81,21 +82,22 @@ loadGame flpath =
 
 -- Computes the best move and prints it to standard output. 
 -- For full credit, also print the outcome that moves forces.
-putBestMove :: Game -> IO ()
-putBestMove game = 
+putBestMove :: Game -> Bool -> IO ()
+putBestMove game verbose = 
     do  let move = bestMove game
         putStrLn $ "The best move for this game is column " ++ show move
         let outcome = whoWillWin game
-        putStrLn $ "This move will force the following outcome: " ++ (showOutcome outcome)
+        when verbose $ putStrLn ("This move will force the following outcome: " ++ (showOutcome outcome))
 
 
 -- STORY 23 Helper Functions
-putBestMoveDepth :: Game -> Int -> IO ()
-putBestMoveDepth game cutOff = 
+putBestMoveDepth :: Game -> Int -> Bool -> IO ()
+putBestMoveDepth game cutOff verbose = 
     case whoMightWin game cutOff of
         Nothing -> putStrLn "whoMightWin returned Nothing"
         Just (rating, move) -> 
             do putStrLn $ "The best move for this game is column " ++ show move
+               when verbose $ putStrLn ("This move has a rating of " ++ (show rating))
 
 
 -- STORY 24
