@@ -213,28 +213,20 @@ rateGame (grid, pl) =
         Just (Winner Red) -> 500
         Just (Winner Black) -> -500
         Just Tie -> 0
-        Nothing -> 67
+        Nothing -> rateOngoing (grid, pl)
 
--- rateGame (grid, pl) = if (possibleWinner/=Ongoing) then (if possibleWinner==Red) then 1000 else (-1000)) else
---    let rows = [ [ (r,c) | c <- [1..7] ] | r <- [1..6] ]
---    	   cols = [ [ (r,c) | r <- [1..6] ] | c <- [1..7] ]
---      	 positive = nub $ [ [(x+i,y+i) | i <- [0..5] , x+i<=6] | (x,y) <- [ (r,1) | r <- [1..3] ] ] ++ [ [(x+i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (1, c) | c <- [2..4] ] ]
---        negative = nub $ [ [(x-i,y+i) | i <- [0..5], x-i>=1 ] | (x,y) <- [ (r,1) | r <- [4..6] ] ] ++ [ [(x-i,y+i) | i <- [0..5], y+i<=7 ] | (x,y) <- [ (6, c) | c <- [2..4] ] ]
---        all = rows ++ cols ++ positive ++ negative
---    in (rateFour all grid)
---    where possibleWinner = winState (head grid) (grid, pl)
-
-
--- rateFour :: [[(Int,Int)]] -> Grid -> Rating
--- rateFour coords grid = (aux 0 Red colors) - (aux 0 Black colors)
---    where colors = map (map (\coord -> lookup coord grid)) coords
---      	   aux n [] = n
---      	   aux n pl (x:xs) = aux (count (change pl x) n) pl xs
---      	   change [] = []
---      	   change pl (y:ys) = ((y == Just pl)||(isNothing y)):(change ys)
---      	   count [] n = n
---      	   count (True:True:True:True:zs) n = count zs (n+1)
---      	   count (x:rest) n = count rest n
+-- aux checks how many tokens have an adjacent token of the same color
+rateOngoing :: Game -> Rating
+rateOngoing (grid, pl) = 
+    let redScore = aux grid Red
+        blackScore = aux grid Black
+        aux [] pl = 0
+        aux (((r, c), tokPl):toks) pl = 
+            let adjacents = catMaybes [ lookup (r+1, c-1) grid, lookup (r+1, c) grid, lookup (r+1, c+1) grid,
+                                        lookup (r, c-1) grid,                         lookup (r, c+1) grid,
+                                        lookup (r-1, c-1) grid, lookup (r-1, c) grid, lookup (r-1, c+1) grid ]
+            in if (tokPl == pl) && (pl `elem` adjacents) then (aux toks pl) + 1 else aux toks pl
+    in redScore - blackScore
 
 
 

@@ -43,7 +43,7 @@ dispatch flags game
     | WinResult `elem` flags   = putBestMove game (Verbose `elem` flags)
     | any isMove flags         = handleMove game (getMove flags) (Verbose `elem` flags)
     | Interactive `elem` flags = putStrLn "The interactive flag is not currently supported." -- STORY 25
-    | otherwise                = putBestMoveDepth game 8 (False) -- STORY 21
+    | otherwise                = putBestMoveDepth game 8 False -- STORY 21
 
 -- isNumber and getNumber are for -d <num>
 isNumber :: Flag -> Bool
