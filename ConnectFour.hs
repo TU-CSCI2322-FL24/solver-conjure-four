@@ -1,7 +1,10 @@
 module ConnectFour where
 
+import System.Environment
+import System.Exit
 import Data.Maybe
-import Data.List (nub)
+import Data.List
+import Data.Char
 
 data Player = Red | Black deriving (Eq, Show)
 type Coordinate = (Row, Column) 
@@ -92,9 +95,6 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Just Black -> "x"
       Nothing    -> "."
 
-
-
-
 -- SPRINT 2
 
 -- Story 8
@@ -129,6 +129,7 @@ moveValue move game = value
                  else 0
          aux = maximum [ moveValue x newGameState | x <- moves ]
 
+
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
 -- player. Failing that, return a move that can force a tie for the current player.
@@ -153,22 +154,7 @@ bestMove (grid, player) =
 
 
 -- STORY 11
--- Given a game state, you should  return a move that can force a win for the current player.
--- Failing that, return a move that can force a tie for the current player.
--- This is very similar to whoWillWin, but keeps track of what the first move was that could force that outcome.
--- That means you should not use this function to write whoWillWin
-showGame :: Game -> String
-showGame (grid, currentPlayer) =
-    let tokens = unlines $ map showToken grid
-        turn = "Turn:" ++ showPlayer currentPlayer
-    in tokens ++ turn
-  where
-    showToken :: Token -> String
-    showToken ((r, c), player) = show r ++ "," ++ show c ++ ":" ++ showPlayer player
-
-    showPlayer :: Player -> String
-    showPlayer Red = "R"
-    showPlayer Black = "B"
+-- Done for stories 12 and 13
 
 -- STORY 12
 -- Takes a string in your text format and returns the corresponding game
@@ -192,7 +178,6 @@ readGame str =
     parsePlayer "B" = Black
     parsePlayer _ = error "Invalid player symbol"
 
-
 -- STORY 13
 -- Takes a game and turns it into a string in your text format
 printGame :: Game -> String
@@ -207,6 +192,73 @@ printGame (grid, currentPlayer) =
     showPlayer :: Player -> String
     showPlayer Red = "R"
     showPlayer Black = "B"
+
+
+-- STORY 20 
+-- Create at least four more test input files. These should be games that are further from the end, but at an interesting state. 
+-- Include games where one player is dominating, games that are evenly matched, and games near the start.
+
+testGame1 :: String
+testGame1 = unlines [
+    "1,1:R",
+    "2,2:R",
+    "3,3:R",
+    "Turn:B"
+  ]
+
+-- A game where one player dominates
+testGame2 :: String
+testGame2 = unlines [
+    "1,1:R",
+    "1,2:R",
+    "1,3:R",
+    "1,4:R",
+    "Turn:B"
+  ]
+
+-- An evenly matched game
+testGame3 :: String
+testGame3 = unlines [
+    "1,1:R",
+    "1,2:B",
+    "2,1:R",
+    "2,2:B",
+    "Turn:R"
+  ]
+
+-- A near-start game
+testGame4 :: String
+testGame4 = unlines [
+    "Turn:R"
+  ]
+
+-- STORY 24
+--Support the -h, --help flag, which should print out a good help message and quit the program.
+
+printHelp :: IO ()
+printHelp = do
+    putStrLn "Connect Four CLI Help"
+    putStrLn "Usage: connectfour [options]"
+    putStrLn "Options:"
+    putStrLn "  -h, --help            Show this help message"
+    putStrLn "  -m <move>, --move <move> Make a move (1-indexed)"
+    putStrLn "  -v, --verbose         Pretty-print the board"
+    putStrLn "  -w, --winner          Show the best move"
+    putStrLn "  -d <num>, --depth <num> Specify <num> as a cutoff depth"
+    putStrLn "  -i, --interactive     Start a new game and play against the computer" 
+    exitSuccess
+
+-- STORY 25: Support the -m <move>, --move <move> flag, which should <move> and print out the resulting board to stdout.
+-- You should print in the input format. If the -v flag is provided, you may pretty-print instead.
+-- The move should be 1-indexed. If a move requires multiple values, the move should be a tuple of numbers separated by a comma with no space. You may use letters instead of numbers if you choose, which should be lower-cased and 'a'-indexed.
+-- Estimate: 1, for full credit.
+
+handleMove :: Game -> Move -> Bool -> IO ()
+handleMove game move verbose = do
+    let newGame = makeMove game move
+    if verbose
+        then putStrLn $ prettyPrint (fst newGame)
+        else putStrLn $ printGame newGame
 
 
 
