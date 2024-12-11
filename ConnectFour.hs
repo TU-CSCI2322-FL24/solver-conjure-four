@@ -16,6 +16,8 @@ type Move = Column
 
 data Win = Winner Player | Tie deriving (Show, Eq)
 
+type Rating = Int
+
 -- STORY 2
 
 winState :: Token -> Grid -> Maybe Win
@@ -44,7 +46,10 @@ list3 = [((1, 2), Red), ((1, 3), Black), ((1, 4), Red), ((1, 5), Red)] --returns
 list4 = [((1, 1), Red), ((2, 2), Red), ((3, 3), Red), ((4, 4), Red)] --returns Red with input4
 input4 = ((4, 4), Red)
 
+
+
 -- STORY 3
+
 nextPlayer :: Player -> Player
 nextPlayer Red = Black
 nextPlayer Black = Red
@@ -63,7 +68,10 @@ updateBoard (grid, currentPlayer) col =
 makeMove :: Game -> Move -> Game
 makeMove game move = if move `elem` legalMoves game then updateBoard game move else game
 
+
+
 --STORY 4
+
 -- takes a grid and a column number and returns
 -- true if that column is not full of tokens
 isNotEmpty :: Grid -> Int -> Bool
@@ -78,6 +86,8 @@ legalMoves (grid, player) = [col | col <- [1..7], isNotEmpty grid col]
 -- legalMoves (fullColGrid, _) = [2, 3, 4, 5, 6, 7]
 -- legalMoves (oneMoveLeft, _) = [7]
 -- legalMoves (fourMovesLeft, _) = [4, 5]
+
+
 
 -- STORY 5
 
@@ -94,9 +104,11 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Nothing    -> "."
 
 
+
 -- SPRINT 2
 
 -- STORY 9
+
 -- Considers every valid move, the resulting game state, and chooses the move with the 
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
@@ -124,7 +136,9 @@ compareWin _ (Winner p) pl = p /= pl
 compareWin (Tie) (Tie) pl = True
 
 
+
 -- STORY 10
+
 -- Given a game state, you should  return a move that can force a win for the current 
 -- player. Failing that, return a move that can force a tie for the current player.
 -- This is very similar to whoWillWin, but keeps track of what the first move was that 
@@ -150,7 +164,9 @@ bestMove (grid, player) =
 -- bestMove (fourMovesLeft, Black) == 5
 
 
+
 -- STORY 12
+
 -- Takes a string in your text format and returns the corresponding game
 readGame :: String -> Game
 readGame str =
@@ -172,7 +188,10 @@ readGame str =
     parsePlayer "B" = Black
     parsePlayer _ = error "Invalid player symbol"
 
+
+
 -- STORY 13
+
 -- Takes a game and turns it into a string in your text format
 showGame :: Game -> String
 showGame (grid, currentPlayer) =
@@ -189,8 +208,8 @@ showGame (grid, currentPlayer) =
 
 
 
--- Story 17 - Edited in Story 19
-type Rating = Int
+-- STORY 17
+
 rateGame :: Game -> Rating
 rateGame (grid, pl) = 
     let state = winState (head grid) grid
@@ -223,8 +242,7 @@ rateGame (grid, pl) =
 
 
 
-
--- Story 18 - Edited in Story 19
+-- STORY 18
 
 whoMightWin :: Game -> Int -> Rating
 whoMightWin (grid, pl) 0 = rateGame (grid, pl)
@@ -237,10 +255,10 @@ whoMightWin (grid, pl) cutoff =
         Just endState -> rateGame (grid, pl)
 
 goodMove :: Game -> Int -> Move
-goodMove (grid, player) cutoff = 
-    let aux [m] = (m, whoMightWin (makeMove (grid, player) m) cutoff)
+goodMove (grid, pl) cutoff = 
+    let aux [m] = (m, whoMightWin (makeMove (grid, pl) m) cutoff)
         aux (m:ms) = 
-            let who = whoMightWin (makeMove (grid, player) m) cutoff
+            let who = whoMightWin (makeMove (grid, pl) m) cutoff
                 (bestM, bestRating) = aux ms
-            in if who > bestRating then (m, who) else (bestM, bestRating)
-    in fst $ aux (legalMoves (grid, player))
+            in if (pl == Red && who >= bestRating) || (pl == Black && who <= bestRating) then (m, who) else (bestM, bestRating)
+    in fst $ aux (legalMoves (grid, pl))

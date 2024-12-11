@@ -22,6 +22,7 @@ options = [ Option ['w'] ["winner"] (NoArg WinResult) "Show the best move"
 
 
 -- MAIN SECTION
+
 -- Reads a file name from the arguments, behaves based on given flag
 main :: IO ()
 main = 
@@ -69,7 +70,9 @@ showOutcome (Winner pl) = "Player " ++ (show pl) ++ " wins"
 showOutcome Tie = "Tie"
 
 
--- STORY 14 Functions
+
+-- STORY 14
+
 writeGame :: Game -> FilePath -> IO ()
 writeGame game flpath = 
     do  let gameStr = showGame game
@@ -90,7 +93,9 @@ putBestMove game verbose =
         when verbose $ putStrLn ("This move will force the following outcome: " ++ (showOutcome outcome))
 
 
+
 -- STORY 23 Helper Functions
+
 putBestMoveDepth :: Game -> Int -> Bool -> IO ()
 putBestMoveDepth game cutoff verbose = 
     do  let bestM = goodMove game cutoff
@@ -99,9 +104,10 @@ putBestMoveDepth game cutoff verbose =
         when verbose $ putStrLn ("This move has a rating of " ++ show rating)
 
 
--- STORY 24
---Support the -h, --help flag, which should print out a good help message and quit the program.
 
+-- STORY 24
+
+--Support the -h, --help flag, which should print out a good help message and quit the program.
 printHelp :: IO ()
 printHelp = do
     putStrLn "Connect Four CLI Help"
@@ -114,11 +120,14 @@ printHelp = do
     putStrLn "  -d <num>, --depth <num> Specify <num> as a cutoff depth"
     putStrLn "  -i, --interactive     Start a new game and play against the computer" 
 
--- STORY 25: Support the -m <move>, --move <move> flag, which should <move> and print out the resulting board to stdout.
+
+
+-- STORY 25
+
+-- Support the -m <move>, --move <move> flag, which should <move> and print out the resulting board to stdout.
 -- You should print in the input format. If the -v flag is provided, you may pretty-print instead.
 -- The move should be 1-indexed. If a move requires multiple values, the move should be a tuple of numbers separated by a comma with no space. You may use letters instead of numbers if you choose, which should be lower-cased and 'a'-indexed.
 -- Estimate: 1, for full credit.
-
 handleMove :: Game -> Move -> Bool -> IO ()
 handleMove game move verbose = do
     let newGame = makeMove game move
