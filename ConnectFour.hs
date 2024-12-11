@@ -191,7 +191,15 @@ showGame (grid, currentPlayer) =
 
 -- Story 17 - Edited in Story 19
 type Rating = Int
--- rateGame :: Game -> Rating
+rateGame :: Game -> Rating
+rateGame (grid, pl) = 
+    let state = winState (head grid) grid
+    in case state of
+        Just (Winner Red) -> 500
+        Just (Winner Black) -> -500
+        Just Tie -> 0
+        Nothing -> 67
+
 -- rateGame (grid, pl) = if (possibleWinner/=Ongoing) then (if possibleWinner==Red) then 1000 else (-1000)) else
 --    let rows = [ [ (r,c) | c <- [1..7] ] | r <- [1..6] ]
 --    	   cols = [ [ (r,c) | r <- [1..6] ] | c <- [1..7] ]
@@ -218,24 +226,21 @@ type Rating = Int
 
 -- Story 18 - Edited in Story 19
 
-whoMightWin :: Game -> Int -> Maybe (Rating, Move)
-whoMightWin (grid, pl) cutOff = Just (cutOff, 3)
--- whoMightWin (grid, pl) cutOff = aux moves (grid, pl) cutOff
---    where moves = legalMoves (grid, pl)
---          winCondition = if pl==Red then 1000 else (-1000)
---          loseCondition = (-(winCondition))
---          f x y = if pl==Red then (max x y) else (min x y)
---          aux [] _ _ = Nothing
---          aux [m] gme 0 = Just (rateGame (makeMove gme m), m)
---          aux (m:ms) gme 0 = let newGameState = makeMove gme m
---                                 rate = rateGame newGameState
---                             in if (rate==winCondition)||((length newMoves)==0) then (Just (rate, m)) else f (Just (rate, m)) (aux ms gme 0)
---          aux [m] gme cutOff = let newGameState = makeMove gme m
---                                   newMoves = legalMoves newGameState
---                                   rate = rateGame newGameState
---                               in if (rate==1000)||(rate==(-1000))||((length newMoves)==0) then (Just (rate, m)) else (aux newMoves newGameState (cutOff-1))
---          aux (m:ms) gme cutOff = let newGameState = makeMove gme m
---                                      newMoves = legalMoves newGameState
---                                      rate = rateGame newGameState
---                                  in if (rate==winCondition)||((length newMoves)==0) then (Just (rate, m)) else 
---                                     (if rate==loseCondition then aux ms gme cutOff else f (aux ms gme cutOff) (aux newMoves newGameState (cutOff-1)))
+whoMightWin :: Game -> Int -> Rating
+whoMightWin (grid, pl) 0 = rateGame (grid, pl)
+whoMightWin (grid, pl) cutoff = 
+    let state = winState (head grid) grid
+        moves = legalMoves (grid, pl)
+        ratings = [whoMightWin resultGame (cutoff-1) | m <- moves, let resultGame = makeMove (grid, pl) m]
+    in case state of
+        Nothing -> if pl == Red then maximum ratings else minimum ratings
+        Just endState -> rateGame (grid, pl)
+
+goodMove :: Game -> Int -> Move
+goodMove (grid, player) cutoff = 
+    let aux [m] = (m, whoMightWin (makeMove (grid, player) m) cutoff)
+        aux (m:ms) = 
+            let who = whoMightWin (makeMove (grid, player) m) cutoff
+                (bestM, bestRating) = aux ms
+            in if who > bestRating then (m, who) else (bestM, bestRating)
+    in fst $ aux (legalMoves (grid, player))

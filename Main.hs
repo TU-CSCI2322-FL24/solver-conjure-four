@@ -92,12 +92,11 @@ putBestMove game verbose =
 
 -- STORY 23 Helper Functions
 putBestMoveDepth :: Game -> Int -> Bool -> IO ()
-putBestMoveDepth game cutOff verbose = 
-    case whoMightWin game cutOff of
-        Nothing -> putStrLn "whoMightWin returned Nothing"
-        Just (rating, move) -> 
-            do putStrLn $ "The best move for this game is column " ++ show move
-               when verbose $ putStrLn ("This move has a rating of " ++ (show rating))
+putBestMoveDepth game cutoff verbose = 
+    do  let bestM = goodMove game cutoff
+        let rating = whoMightWin game cutoff
+        putStrLn $ "The best move for this game is column " ++ show bestM
+        when verbose $ putStrLn ("This move has a rating of " ++ show rating)
 
 
 -- STORY 24
