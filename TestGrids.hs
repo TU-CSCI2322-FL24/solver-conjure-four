@@ -9,7 +9,7 @@ fullColGrid = [((1, 1), Red), ((2, 1), Black), ((3, 1), Red), ((4, 1), Black), (
 fullGrid = [((row, col), Red) | row <- [1..6], col <- [1..7]]
 
 -- Whoever goes first wins
-oneMoveLeft = (((6, 5), Red)):twoMovesLeft
+oneMoveLeft = (((6, 5), Black)):twoMovesLeft
 
 -- Up to two moves left in the game.
 -- Red wins with either move if they play first.

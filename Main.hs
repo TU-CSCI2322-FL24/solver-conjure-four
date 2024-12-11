@@ -38,10 +38,11 @@ main =
 -- Add more cases here to cover more flags
 dispatch :: [Flag] -> Game -> IO ()
 dispatch flags game
-    | any isNumber flags     = putBestMoveDepth game (getNumber flags) (Verbose `elem` flags)
-    | WinResult `elem` flags = putBestMove game (Verbose `elem` flags)
-    | any isMove flags       = handleMove game (getMove flags) (Verbose `elem` flags)
-    | otherwise              = undefined -- STORY 21
+    | any isNumber flags       = putBestMoveDepth game (getNumber flags) (Verbose `elem` flags)
+    | WinResult `elem` flags   = putBestMove game (Verbose `elem` flags)
+    | any isMove flags         = handleMove game (getMove flags) (Verbose `elem` flags)
+    | Interactive `elem` flags = putStrLn "The interactive flag is not currently supported." -- STORY 25
+    | otherwise                = putStrLn "Implement this in Story 21" -- STORY 21
 
 -- isNumber and getNumber are for -d <num>
 isNumber :: Flag -> Bool
@@ -66,7 +67,6 @@ getMove (_:flags) = getMove flags
 showOutcome :: Win -> String
 showOutcome (Winner pl) = "Player " ++ (show pl) ++ " wins"
 showOutcome Tie = "Tie"
-showOutcome _ = "whoWillWin returned Ongoing or an invalid Win state"
 
 
 -- STORY 14 Functions
@@ -126,3 +126,9 @@ handleMove game move verbose = do
     if verbose
         then putStrLn $ prettyPrint (fst newGame)
         else putStrLn $ showGame newGame
+
+-- for testing
+printGrid :: Grid -> IO ()
+printGrid grid = 
+    do let str = prettyPrint grid
+       putStrLn str

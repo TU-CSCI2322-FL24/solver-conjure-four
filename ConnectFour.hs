@@ -14,16 +14,17 @@ type Grid = [Token]
 type Game = (Grid, Player) -- Current grid and whose turn it is
 type Move = Column
 
-data Win = Winner Player | Ongoing | Tie deriving (Show, Eq)
+data Win = Winner Player | Tie deriving (Show, Eq)
 
 -- STORY 2
 
-winState :: Token -> Grid -> Win
+winState :: Token -> Grid -> Maybe Win
 winState ((r,c),pl) grid = 
    let dirs = [[(r+i,c) | i <- [-3..3]], [(r,c+i) | i <- [-3..3]], [(r+i,c+i) | i <- [-3..3]], [(r+i,c-i) | i <- [-3..3]]] --list of list of coordinates
        checkGrid = map (map (\coord -> lookup coord grid)) dirs --list of list of maybe players
        checkWin = map checkFour checkGrid --list of Maybe Players
-   in if ((Just pl) `elem` checkWin) then Winner pl else Ongoing --later check for tie
+       moves = legalMoves (grid, pl)
+   in if ((Just pl) `elem` checkWin) then Just (Winner pl) else (if null moves then Just Tie else Nothing) --later check for tie
 
 checkFour :: [Maybe Player] -> Maybe Player
 checkFour [] = Nothing
@@ -92,39 +93,51 @@ prettyPrint grid = unlines [ prettyRow r | r <- reverse [1..6]]
       Just Black -> "x"
       Nothing    -> "."
 
+
 -- SPRINT 2
-
--- Story 8
-
-winTie :: [Move] -> Grid -> Win
-winTie legalmoves grid = if (length legalmoves) == 0 then checkAllforWin grid else Ongoing
-
-checkAllforWin :: Grid -> Win
-checkAllforWin [] = Tie
-checkAllforWin (token:rest) = if winner==Ongoing then checkAllforWin rest else winner
-   where winner = winState token rest
 
 -- STORY 9
 -- Considers every valid move, the resulting game state, and chooses the move with the 
 -- best outcome for the current player. This will involve recursively searching through 
 -- the game states that result from that move. Think Scavenge!
 whoWillWin :: Game -> Win
-whoWillWin (grid, pl) = Winner Black
+whoWillWin (grid, pl) = 
+    let state = winState (head grid) grid
+        moves = legalMoves (grid, pl)
+        possibleStates = [whoWillWin resultGame | m <- moves, let resultGame = makeMove (grid, pl) m]
+    in case state of
+        Nothing -> getBestWin possibleStates pl
+        Just endState -> endState
 
-chooseMove :: Game -> Maybe Move
-chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
-   where moves = legalMoves game
-         distanceToWin = [ (moveValue x game, x) | x <- moves ]
+-- Given a list of win states, returns the best one for the given player
+-- Winner pl > Tie > Winner not pl
+getBestWin :: [Win] -> Player -> Win
+getBestWin [w] pl = w
+getBestWin (w:ws) pl = 
+    let currBest = getBestWin ws pl
+    in if compareWin w currBest pl then w else currBest
 
-moveValue :: Move -> Game -> Int
-moveValue move game = value
-   where newGameState = makeMove game move
-         moves = legalMoves newGameState
-         possibleWinner = winState (head (fst newGameState)) (fst newGameState)
-         value = if possibleWinner==Ongoing then
-                 (if (length moves)==0 then (-1) else (if aux>0 then aux+1 else aux))
-                 else 0
-         aux = maximum [ moveValue x newGameState | x <- moves ]
+-- Returns true if win state 1 is better than or equal for the given player than win state 2
+compareWin :: Win -> Win -> Player -> Bool
+compareWin (Winner p) _ pl = p == pl
+compareWin _ (Winner p) pl = p /= pl
+compareWin (Tie) (Tie) pl = True
+
+
+-- chooseMove :: Game -> Maybe Move
+-- chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
+--    where moves = legalMoves game
+--          distanceToWin = [ (moveValue x game, x) | x <- moves ]
+
+-- moveValue :: Move -> Game -> Int
+-- moveValue move game = value
+--    where (newGrid, newPl) = makeMove game move
+--          moves = legalMoves (newGrid, newPl)
+--          possibleWinner = winState (head newGrid) (newGrid)
+--          value = if possibleWinner==Ongoing then
+--                  (if (length moves)==0 then (-1) else (if aux>0 then aux+1 else aux))
+--                  else 0
+--          aux = maximum [ moveValue x (newGrid, newPl) | x <- moves ]
 
 
 -- STORY 10
@@ -217,32 +230,6 @@ type Rating = Int
 
 
 -- Story 18 - Edited in Story 19
-
-{-whoMightWin :: Game -> Int -> Maybe (Rating, Move)
-whoMightWin game cutOff = if (length moves)=0 then Nothing else
-   let moves = legalMoves game
-       values = [ (moveValue x game cutOff, x) | x <- moves ]
-       min = minimum values
-       max = maximum values
-       checker = if (fst min)<0 then (snd min) else (if (fst max)>0 then (snd max) else Nothing)
-   in if (isNothing checker) then Nothing else ((rateGame (makeMove game checker)), checker)
-
-
-moveValueCutOff :: Move -> Game -> Int -> Int
-moveValueCutOff move (grid, pl) cutOff = value
-   where newGameState = makeMove (grid, pl) move
-         moves = legalMoves newGameState
-         possibleWinner = winState (head (fst newGameState)) (fst newGameState)
-         value = if possibleWinner==Ongoing then
-                    (if cutOff==0 then 
-                        (let rater = (rateGame newGameState) in (if rater>0 then rater else 0))
-                    else checker)
-                 else (if possibleWinner==pl then (-1000) else 0)
-         values = [ moveValueCutOff x newGameState (cutOff-1) | x <- moves ]
-         min = minimum values
-         max = maximum values
-         checker = if min<0 then min+1 else (if max>0 then max else 0)-}
-
 
 whoMightWin :: Game -> Int -> Maybe (Rating, Move)
 whoMightWin (grid, pl) cutOff = Just (cutOff, 3)
