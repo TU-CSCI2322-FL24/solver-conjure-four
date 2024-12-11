@@ -194,44 +194,6 @@ printGame (grid, currentPlayer) =
     showPlayer Black = "B"
 
 
--- STORY 20 
--- Create at least four more test input files. These should be games that are further from the end, but at an interesting state. 
--- Include games where one player is dominating, games that are evenly matched, and games near the start.
-
-testGame1 :: String
-testGame1 = unlines [
-    "1,1:R",
-    "2,2:R",
-    "3,3:R",
-    "Turn:B"
-  ]
-
--- A game where one player dominates
-testGame2 :: String
-testGame2 = unlines [
-    "1,1:R",
-    "1,2:R",
-    "1,3:R",
-    "1,4:R",
-    "Turn:B"
-  ]
-
--- An evenly matched game
-testGame3 :: String
-testGame3 = unlines [
-    "1,1:R",
-    "1,2:B",
-    "2,1:R",
-    "2,2:B",
-    "Turn:R"
-  ]
-
--- A near-start game
-testGame4 :: String
-testGame4 = unlines [
-    "Turn:R"
-  ]
-
 -- STORY 24
 --Support the -h, --help flag, which should print out a good help message and quit the program.
 
