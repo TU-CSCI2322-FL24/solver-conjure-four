@@ -124,22 +124,6 @@ compareWin _ (Winner p) pl = p /= pl
 compareWin (Tie) (Tie) pl = True
 
 
--- chooseMove :: Game -> Maybe Move
--- chooseMove game = if (length moves)>0 then Just (snd (maximum distanceToWin)) else Nothing
---    where moves = legalMoves game
---          distanceToWin = [ (moveValue x game, x) | x <- moves ]
-
--- moveValue :: Move -> Game -> Int
--- moveValue move game = value
---    where (newGrid, newPl) = makeMove game move
---          moves = legalMoves (newGrid, newPl)
---          possibleWinner = winState (head newGrid) (newGrid)
---          value = if possibleWinner==Ongoing then
---                  (if (length moves)==0 then (-1) else (if aux>0 then aux+1 else aux))
---                  else 0
---          aux = maximum [ moveValue x (newGrid, newPl) | x <- moves ]
-
-
 -- STORY 10
 -- Given a game state, you should  return a move that can force a win for the current 
 -- player. Failing that, return a move that can force a tie for the current player.
@@ -147,13 +131,16 @@ compareWin (Tie) (Tie) pl = True
 -- could force that outcome. That means you should not use this function to write whoWillWin.
 bestMove :: Game -> Move
 bestMove (grid, player) = 
-    let aux [m] = m
+    let aux [m] = (m, whoWillWin (makeMove (grid, player) m))
         aux (m:ms) = 
             let who = whoWillWin (makeMove (grid, player) m)
-            in case who of
-                Winner p -> if p == player then m else aux ms
-                Tie -> aux ms
-    in aux (legalMoves (grid, player))
+                (bestM, bestWin) = aux ms
+            in if compareWin who bestWin player then (m, who) else (bestM, bestWin)
+    in fst $ aux (legalMoves (grid, player))
+
+-- case who of
+--     Winner p -> if p == player then (m, who) else aux ms
+--     Tie -> aux ms
 
 -- Story 10 Test Cases
 -- bestMove (oneMoveLeft, Red) == 7
