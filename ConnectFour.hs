@@ -152,16 +152,12 @@ bestMove (grid, player) =
             in if compareWin who bestWin player then (m, who) else (bestM, bestWin)
     in fst $ aux (legalMoves (grid, player))
 
--- case who of
---     Winner p -> if p == player then (m, who) else aux ms
---     Tie -> aux ms
-
 -- Story 10 Test Cases
--- bestMove (oneMoveLeft, Red) == 7
+-- bestMove (oneMoveLeft, Red) == 4
 -- bestMove (twoMovesLeft, Red) == 4 or 5
 -- bestMove (twoMovesLeft, Black) == 4
--- bestMove (fourMovesLeft, Red) == 4
--- bestMove (fourMovesLeft, Black) == 5
+-- bestMove (fourMovesLeft, Red) == 4 or 5 (assuming Black is playing the best move, Red can't win)
+-- bestMove (fourMovesLeft, Black) == 4
 
 
 
