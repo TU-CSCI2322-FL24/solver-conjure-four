@@ -39,11 +39,15 @@ main =
 -- Add more cases here to cover more flags
 dispatch :: [Flag] -> Game -> IO ()
 dispatch flags game
+    | Interactive `elem` flags = do
+        let cutoff = getNumber flags -- Default depth or specified depth
+        let verbose = Verbose `elem` flags
+        interactiveMode game verbose cutoff
     | any isNumber flags       = putBestMoveDepth game (getNumber flags) (Verbose `elem` flags)
     | WinResult `elem` flags   = putBestMove game (Verbose `elem` flags)
     | any isMove flags         = handleMove game (getMove flags) (Verbose `elem` flags)
-    | Interactive `elem` flags = putStrLn "The interactive flag is not currently supported." -- STORY 25
     | otherwise                = putBestMoveDepth game 8 False -- STORY 21
+
 
 -- isNumber and getNumber are for -d <num>
 isNumber :: Flag -> Bool
@@ -140,3 +144,38 @@ printGrid :: Grid -> IO ()
 printGrid grid = 
     do let str = prettyPrint grid
        putStrLn str
+
+
+
+
+-- Interactive gameplay
+interactiveMode :: Game -> Bool -> Int -> IO ()
+interactiveMode game verbose cutoff = do
+    let (grid, currentPlayer) = game
+    -- Check if the game is over
+    case winState (head grid) grid of
+        Just (Winner player) -> putStrLn $ "Player " ++ show player ++ " wins!"
+        Just Tie             -> putStrLn "The game ends in a tie."
+        Nothing              -> do
+            if currentPlayer == Red
+            then do
+                putStrLn "Your turn! Enter a column number (1-7):"
+                moveStr <- getLine
+                case reads moveStr :: [(Int, String)] of
+                    [(move, "")] | move `elem` legalMoves game -> do
+                        let newGame = makeMove game move
+                        if verbose
+                        then putStrLn $ prettyPrint (fst newGame)
+                        else putStrLn $ showGame newGame
+                        interactiveMode newGame verbose cutoff
+                    _ -> do
+                        putStrLn "Invalid move. Please try again."
+                        interactiveMode game verbose cutoff
+            else do
+                let move = goodMove game cutoff
+                putStrLn $ "Computer chooses column: " ++ show move
+                let newGame = makeMove game move
+                if verbose
+                then putStrLn $ prettyPrint (fst newGame)
+                else putStrLn $ showGame newGame
+                interactiveMode newGame verbose cutoff
