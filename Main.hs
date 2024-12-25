@@ -25,25 +25,34 @@ options = [ Option ['w'] ["winner"] (NoArg WinResult) "Show the best move"
 
 -- Reads a file name from the arguments, behaves based on given flag
 main :: IO ()
-main = 
-    do  args <- getArgs
-        let (flags, inputs, errors) = getOpt Permute options args
-        if Help `elem` flags
-        then printHelp
-        else 
-            do  let flpath = if null inputs then error "Please provide a filepath." else head inputs
-                fileStr <- readFile flpath
-                let game = readGame fileStr
-                dispatch flags game
+main = do
+    args <- getArgs
+    let (flags, inputs, errors) = getOpt Permute options args
+    if Help `elem` flags
+    then printHelp
+    else if Interactive `elem` flags
+         then interactiveMode ([], Red) (Verbose `elem` flags) (getNumber flags)
+         else do
+             let flpath = if null inputs 
+                          then error "Please provide a filepath." 
+                          else head inputs
+             fileStr <- readFile flpath
+             let game = readGame fileStr
+             dispatch flags game
+
 
 -- Add more cases here to cover more flags
 dispatch :: [Flag] -> Game -> IO ()
 dispatch flags game
+    | Interactive `elem` flags = do
+        let cutoff = getNumber flags -- Default depth or specified depth
+        let verbose = Verbose `elem` flags
+        interactiveMode game verbose cutoff
     | any isNumber flags       = putBestMoveDepth game (getNumber flags) (Verbose `elem` flags)
     | WinResult `elem` flags   = putBestMove game (Verbose `elem` flags)
     | any isMove flags         = handleMove game (getMove flags) (Verbose `elem` flags)
-    | Interactive `elem` flags = putStrLn "The interactive flag is not currently supported." -- STORY 25
     | otherwise                = putBestMoveDepth game 8 False -- STORY 21
+
 
 -- isNumber and getNumber are for -d <num>
 isNumber :: Flag -> Bool
@@ -74,19 +83,19 @@ showOutcome Tie = "Tie"
 -- STORY 14
 
 writeGame :: Game -> FilePath -> IO ()
-writeGame game flpath = 
+writeGame game flpath =
     do  let gameStr = showGame game
         writeFile flpath gameStr
 
 loadGame :: FilePath -> IO Game
-loadGame flpath = 
+loadGame flpath =
     do  fileStr <- readFile flpath
         return (readGame fileStr)
 
 -- Computes the best move and prints it to standard output. 
 -- For full credit, also print the outcome that moves forces.
 putBestMove :: Game -> Bool -> IO ()
-putBestMove game verbose = 
+putBestMove game verbose =
     do  let move = bestMove game
         putStrLn $ "The best move for this game is column " ++ show move
         let outcome = whoWillWin game
@@ -97,7 +106,7 @@ putBestMove game verbose =
 -- STORY 23 Helper Functions
 
 putBestMoveDepth :: Game -> Int -> Bool -> IO ()
-putBestMoveDepth game cutoff verbose = 
+putBestMoveDepth game cutoff verbose =
     do  let bestM = goodMove game cutoff
         let rating = whoMightWin game cutoff
         putStrLn $ "The best move for this game is column " ++ show bestM
@@ -118,7 +127,7 @@ printHelp = do
     putStrLn "  -v, --verbose         Pretty-print the board"
     putStrLn "  -w, --winner          Show the best move"
     putStrLn "  -d <num>, --depth <num> Specify <num> as a cutoff depth"
-    putStrLn "  -i, --interactive     Start a new game and play against the computer" 
+    putStrLn "  -i, --interactive     Start a new game and play against the computer"
 
 
 
@@ -137,6 +146,45 @@ handleMove game move verbose = do
 
 -- for testing
 printGrid :: Grid -> IO ()
-printGrid grid = 
+printGrid grid =
     do let str = prettyPrint grid
        putStrLn str
+
+
+
+
+-- Interactive gameplay
+interactiveMode :: Game -> Bool -> Int -> IO ()
+interactiveMode game@(grid, currentPlayer) verbose cutoff = do
+    -- Check if the grid is empty
+    if null grid
+    then playTurn game verbose cutoff
+    else case winState (head grid) grid of
+        Just (Winner player) -> putStrLn $ "Player " ++ show player ++ " wins!"
+        Just Tie             -> putStrLn "The game ends in a tie."
+        Nothing              -> playTurn game verbose cutoff
+
+playTurn :: Game -> Bool -> Int -> IO ()
+playTurn game@(grid, currentPlayer) verbose cutoff = 
+    if currentPlayer == Red
+    then do
+        putStrLn "Your turn! Enter a column number (1-7):"
+        moveStr <- getLine
+        case reads moveStr :: [(Int, String)] of
+            [(move, "")] | move `elem` legalMoves game -> do
+                let newGame = makeMove game move
+                if verbose
+                then putStrLn $ prettyPrint (fst newGame)
+                else putStrLn $ showGame newGame
+                interactiveMode newGame verbose cutoff
+            _ -> do
+                putStrLn "Invalid move. Please try again."
+                playTurn game verbose cutoff
+    else do
+        let move = goodMove game cutoff
+        putStrLn $ "Computer chooses column: " ++ show move
+        let newGame = makeMove game move
+        if verbose
+        then putStrLn $ prettyPrint (fst newGame)
+        else putStrLn $ showGame newGame
+        interactiveMode newGame verbose cutoff

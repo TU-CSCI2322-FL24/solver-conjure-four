@@ -250,3 +250,4 @@ goodMove (grid, pl) cutoff =
                 (bestM, bestRating) = aux ms
             in if (pl == Red && who >= bestRating) || (pl == Black && who <= bestRating) then (m, who) else (bestM, bestRating)
     in fst $ aux (legalMoves (grid, pl))
+
